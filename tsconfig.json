@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "es2015",
+    "module": "es2015",
+    "jsx": "react-native",
+    "moduleResolution": "node",
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "alwaysStrict": true,
+    "noFallthroughCasesInSwitch": true,
+    "importHelpers": true,
+    "allowSyntheticDefaultImports": false,
+    "baseUrl": "./src",
+    "sourceMap": true,
+    "lib": ["es2017", "esnext.asynciterable", "dom"],
+    "typeRoots": ["node_modules/@types"]
+  }
+}
