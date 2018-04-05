@@ -7,8 +7,11 @@
     "test": "jest"
   },
   "dependencies": {
+    "date-fns": "^1.29.0",
     "react": "^16.3.0-alpha.1",
     "react-native": "0.54.4",
+    "react-native-alarm-notification": "^1.0.9",
+    "react-native-create-bridge": "^2.0.1",
     "tslib": "^1.9.0"
   },
   "devDependencies": {
