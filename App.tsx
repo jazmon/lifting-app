@@ -5,102 +5,138 @@
  */
 
 import * as React from 'react';
-import { Platform, StyleSheet, Text, View, Button } from 'react-native';
-import ReactNativeAN from 'react-native-alarm-notification';
+import {
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+  Button,
+  FlatList,
+  ListRenderItem,
+  ListRenderItemInfo,
+} from 'react-native';
 import * as dateFns from 'date-fns';
-
-const ID = '1234';
-const date = dateFns.format(
-  dateFns.addSeconds(new Date(), 5),
-  'DD-MM-YYYY HH:mm:ss',
-);
-console.log('date', date);
-const alarmNotifData = {
-  id: ID, // Required
-  title: 'My Notification Title', // Required
-  message: 'My Notification Message', // Required
-  ticker: 'My Notification Ticker',
-  auto_cancel: true, // default: true
-  vibrate: true,
-  vibration: 100, // default: 100, no vibration if vibrate: false
-  small_icon: 'ic_launcher', // Required
-  large_icon: 'ic_launcher',
-  play_sound: true,
-  sound_name: null, // Plays custom notification ringtone if sound_name: null
-  color: 'red',
-  schedule_once: true, // Works with ReactNativeAN.scheduleAlarm so alarm fires once
-  tag: 'some_tag',
-  fire_date: date, // Date for firing alarm, Required for ReactNativeAN.scheduleAlarm. Format: dd-MM-yyyy HH:mm:ss
-};
-
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
-  android:
-    'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
-});
+import styled from 'styled-components/native';
+import { Duration } from 'luxon';
 
 type Props = {};
-export default class App extends React.Component<Props> {
-  alarm = () => {
-    //Schedule Future Alarm
-    ReactNativeAN.scheduleAlarm(alarmNotifData);
 
-    // Delete Scheduled Alarm
-    // ReactNativeAN.deleteAlarm("12345");
+interface Workout {
+  exercices: Exercise[];
+  comment: null | string;
+  date: Date;
+}
 
-    // //Send Local Notification Now
-    // ReactNativeAN.sendNotification(alarmNotifData);
+interface Exercise {
+  name: string;
+  musclesWorked: string[];
+  restTime: Duration;
+  sets: WorkoutSet[];
+}
+type WorkoutSetType = 'superset' | 'normal' | 'warmup';
 
-    // //Get All Scheduled Alarms
-    // ReactNativeAN.getScheduledAlarms().then(alarmNotif=>console.log(alarmNotif));
+interface WorkoutSet {
+  type: WorkoutSetType;
+  comment: null | string;
+  repetitionCount: number;
+  id: string;
+  weight: number;
+}
 
-    // //Clear Notification(s) From Notification Center/Tray
-    // ReactNativeAN.removeAllFiredNotifications()
-    // ReactNativeAN.removeFiredNotification("12345")
+interface State {
+  exercise: Exercise;
+}
 
-    // //Removes Future Local Notifications
-    // ReactNativeAN.cancelAllNotifications()
-    // ReactNativeAN.cancelNotification("12345")
+// const set: WorkoutSet = ;
+
+const ListItem = styled.View`
+  flex-direction: row;
+  background: #efefef;
+  display: flex;
+  align-content: center;
+
+  justify-content: space-around;
+  padding-top: 4;
+  padding-bottom: 4;
+`;
+
+const Container = styled.View`
+  flex: 1;
+  background: #f5fcff;
+`;
+
+export default class App extends React.Component<Props, State> {
+  state = {
+    exercise: {
+      name: 'Back squat',
+      restTime: Duration.fromMillis(300000),
+      musclesWorked: ['legs'],
+      sets: [
+        {
+          type: 'normal' as WorkoutSetType,
+          comment: null,
+          repetitionCount: 5,
+          weight: 120,
+          id: '1',
+        },
+        {
+          type: 'normal' as WorkoutSetType,
+          comment: null,
+          repetitionCount: 5,
+          weight: 120,
+          id: '2',
+        },
+        {
+          type: 'normal' as WorkoutSetType,
+          comment: null,
+          repetitionCount: 5,
+          weight: 120,
+          id: '3',
+        },
+        {
+          type: 'normal' as WorkoutSetType,
+          comment: null,
+          repetitionCount: 5,
+          weight: 120,
+          id: '4',
+        },
+        {
+          type: 'normal' as WorkoutSetType,
+          comment: null,
+          repetitionCount: 5,
+          weight: 120,
+          id: '5',
+        },
+      ],
+    },
   };
 
-  clearAlarm = () => {
-    ReactNativeAN.deleteAlarm(ID);
-    // ReactNativeAN.deleteAlarm('12345');
-    // ReactNativeAN.removeFiredNotification('12345');
-    // ReactNativeAN.cancelAllNotifications();
-    // ReactNativeAN.removeAllFiredNotifications();
-    // ReactNativeAN.cancelNotification('12345');
+  completeSet = (id: string) => {};
+
+  renderRow = ({ index, item }: ListRenderItemInfo<WorkoutSet>) => {
+    return (
+      <ListItem key={item.id}>
+        <Text>Set {item.id}</Text>
+        <Text>{item.repetitionCount} Reps</Text>
+        <Text>{item.weight} kg</Text>
+        <Button title="Done" onPress={() => this.completeSet(item.id)} />
+      </ListItem>
+    );
   };
 
   render() {
+    const { exercise } = this.state;
+    // console.log('duration', exercise.restTime.toString());
+    const duration = exercise.restTime.shiftTo('minutes', 'seconds');
+
     return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>Welcome to React Native!</Text>
-        <Text style={styles.instructions}>To get started, edit App.js</Text>
-        <Text style={styles.instructions}>{instructions}</Text>
-        <Button title="alarm" onPress={this.alarm} />
-        <Button title="mute alarm" onPress={this.clearAlarm} />
-      </View>
+      <Container>
+        <Text>{exercise.name}</Text>
+        <Text>
+          Rest: {duration.minutes} min {duration.seconds} seconds
+        </Text>
+        <FlatList data={exercise.sets} renderItem={this.renderRow} />
+      </Container>
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-});
