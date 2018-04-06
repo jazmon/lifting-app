@@ -4324,10 +4324,6 @@ react-is@^16.3.0:
   version "16.3.0"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.3.0.tgz#f0e8bfd8c09b480dd610b8639d9ed65c13601224"
 
-react-native-alarm-notification@^1.0.9:
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/react-native-alarm-notification/-/react-native-alarm-notification-1.0.9.tgz#49c8e9aada6caeb85544434e18ac5419226f224e"
-
 react-native-create-bridge@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/react-native-create-bridge/-/react-native-create-bridge-2.0.1.tgz#3c4d148211cfb303ccb82ba5332b0c45e4463df6"
