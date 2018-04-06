@@ -34,7 +34,8 @@ interface State {
   exercise: Exercise;
   weight: string;
   reps: string;
-  timer: null | number;
+  start: null | number;
+  elapsed: number;
 }
 
 interface ListItemProps {
@@ -58,14 +59,14 @@ const ListItem = styled.View`
   justify-content: space-around;
   padding-top: 4;
   padding-bottom: 4;
-  ${(props: ListItemProps) => {
+  /* ${(props: ListItemProps) => {
     if (props.type === 'warmup') {
       return css`
         background: #4caf50;
       `;
     }
     return '';
-  }};
+  }}; */
   ${(props: ListItemProps) => {
     if (props.completed) {
       return css`
@@ -99,7 +100,8 @@ const initialState: State = {
   weight: '20',
   reps: '5',
   exercise: dummyData,
-  timer: null,
+  elapsed: 0,
+  start: null,
 };
 const CompleteSetContainer = styled.View`
   display: flex;
@@ -138,47 +140,75 @@ const StyledTextInput = styled.TextInput`
 export default class App extends React.Component<Props, State> {
   state = initialState;
 
+  componentWillUnmount() {
+    if (this.timer) {
+      clearInterval(this.timer);
+    }
+  }
+
   // componentDidMount() {
   //   this.timer = setInterval(this.tick, 100)
   // }
 
-  timer: number | null = null;
+  timer: NodeJS.Timer | null = null;
 
   tick = () => {
-    const elapsed = (new Date().getMilliseconds() - this.state.timer) as number;
+    const current = new Date().getTime();
+    console.log('current', current);
+
+    const elapsed = current - ((this.state.start as any) as number);
+
+    console.log('elapsed', elapsed);
+
+    this.setState({ elapsed });
   };
 
   completeSet = () => {
-    const sets = [...this.state.exercise.sets];
-    this.setState(prevState => {
-      // const sets = [...prevState.exercise.sets];
-      const set = sets.findIndex((set: WorkoutSet) => set.completed === false);
-      console.log('set', set);
+    // const sets = [...this.state.exercise.sets];
+    this.setState(
+      prevState => {
+        const sets = [...prevState.exercise.sets];
+        // console.log('sets', sets);
 
-      if (set === -1) return null;
-      sets[set].completed = true;
+        const set = sets.findIndex(
+          (set: WorkoutSet) => set.completed === false,
+        );
+        // console.log('set', set);
 
-      const nextSet = sets.length < set ? sets[set + 1] : null;
+        if (set === -1) return null;
+        sets[set].completed = true;
 
-      console.log('nextSet', nextSet);
+        // console.log('sets.length', sets.length);
+        // console.log('sets[set + 1]', sets[set + 1]);
 
-      if (nextSet !== null) {
+        const nextSet = sets.length > set + 1 ? sets[set + 1] : null;
+
+        // console.log('nextSet', nextSet);
+
+        if (nextSet !== null) {
+          return {
+            exercise: {
+              ...prevState.exercise,
+              sets: sets,
+            },
+            weight: nextSet.weight.toString(),
+            reps: nextSet.repetitionCount.toString(),
+            // timer: 0,
+            start: new Date().getTime(),
+            elapsed: 0,
+          } as State;
+        }
         return {
           exercise: {
             ...prevState.exercise,
             sets: sets,
           },
-          weight: nextSet.weight.toString(),
-          reps: nextSet.repetitionCount.toString(),
-        } as State;
-      }
-      return {
-        exercise: {
-          ...prevState.exercise,
-          sets: sets,
-        },
-      };
-    });
+        };
+      },
+      () => {
+        this.timer = setInterval(this.tick, 100);
+      },
+    );
   };
 
   renderRow = ({ index, item }: ListRenderItemInfo<WorkoutSet>) => {
@@ -243,6 +273,16 @@ export default class App extends React.Component<Props, State> {
     const { exercise } = this.state;
 
     const currentSet = exercise.sets.find(set => set.completed === false);
+    const duration = exercise.restTime.shiftTo('minutes', 'seconds');
+
+    const elapsed = this.state.elapsed
+      ? Math.round(this.state.elapsed / 100)
+      : null;
+
+    const elapsedMinutes = elapsed ? Math.floor(elapsed / 600) + 1 : 0;
+    const elapsedSeconds = elapsed ? Math.floor(elapsed / 10) : 0;
+    const minutes = duration.minutes - elapsedMinutes;
+    const seconds = duration.seconds - elapsedSeconds + elapsedMinutes * 60;
 
     // const weight = currentSet ? currentSet.weight : 0;
     // const reps = currentSet ? currentSet.repetitionCount : 0;
@@ -257,6 +297,14 @@ export default class App extends React.Component<Props, State> {
           style={{ height: 64, backgroundColor: '#9C27B0' }}
           titleColor="#fff"
         />
+        {elapsed !== null && (
+          <Text>
+            Time until next set: {minutes}:{seconds.toString().length === 2
+              ? ''
+              : '0'}
+            {seconds}
+          </Text>
+        )}
         <SectionList
           sections={[exerciseToSection(exercise)]}
           renderSectionHeader={this.renderSectionHeader}
