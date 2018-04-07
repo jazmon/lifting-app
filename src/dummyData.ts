@@ -73,4 +73,45 @@ const exercise: Exercise = {
     },
   ],
 };
+
+export const exercise2: Exercise = {
+  name: 'Deadlift',
+  id: '0',
+  restTime: Duration.fromMillis(60000),
+  musclesWorked: ['legs'],
+  sets: [
+    {
+      type: 'warmup' as WorkoutSetType,
+      comment: null,
+      repetitionCount: 5,
+      weight: 20,
+      id: '0',
+      completed: false,
+    },
+    {
+      type: 'warmup' as WorkoutSetType,
+      comment: null,
+      repetitionCount: 5,
+      weight: 40,
+      id: '1',
+      completed: false,
+    },
+    {
+      type: 'warmup' as WorkoutSetType,
+      comment: null,
+      repetitionCount: 5,
+      weight: 60,
+      completed: false,
+      id: '2',
+    },
+    {
+      type: 'normal' as WorkoutSetType,
+      comment: null,
+      repetitionCount: 5,
+      weight: 120,
+      completed: false,
+      id: '3',
+    },
+  ],
+};
 export default exercise;

@@ -18,7 +18,7 @@ import * as dateFns from 'date-fns';
 import styled, { css } from 'styled-components/native';
 import { Duration } from 'luxon';
 import { Partial, Workout, WorkoutSet, WorkoutSetType, Exercise } from 'types';
-import dummyData from './dummyData';
+import dummyData, { exercise2 } from './dummyData';
 
 type Props = {};
 
@@ -137,6 +137,20 @@ const StyledTextInput = styled.TextInput`
   /* height: 40; */
   /* border: 1px solid gray; */
 `;
+
+const ReminderView = styled.View`
+  margin-left: 12;
+  margin-right: 12;
+`;
+
+const ItemView = styled.View`
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  align-content: center;
+  justify-content: center;
+  width: 100%;
+`;
 export default class App extends React.Component<Props, State> {
   state = initialState;
 
@@ -146,44 +160,41 @@ export default class App extends React.Component<Props, State> {
     }
   }
 
-  // componentDidMount() {
-  //   this.timer = setInterval(this.tick, 100)
-  // }
-
   timer: NodeJS.Timer | null = null;
 
   tick = () => {
     const current = new Date().getTime();
-    console.log('current', current);
+    // console.log('current', current);
 
     const elapsed = current - ((this.state.start as any) as number);
 
-    console.log('elapsed', elapsed);
+    // console.log('elapsed', elapsed);
+
+    if (
+      elapsed >
+      this.state.exercise.restTime.shiftTo('milliseconds').milliseconds
+    ) {
+      if (this.timer) clearInterval(this.timer);
+      this.setState({ elapsed: 0, start: null });
+      return;
+    }
 
     this.setState({ elapsed });
   };
 
   completeSet = () => {
-    // const sets = [...this.state.exercise.sets];
     this.setState(
       prevState => {
         const sets = [...prevState.exercise.sets];
-        // console.log('sets', sets);
 
         const set = sets.findIndex(
           (set: WorkoutSet) => set.completed === false,
         );
-        // console.log('set', set);
 
         if (set === -1) return null;
         sets[set].completed = true;
 
-        // console.log('sets.length', sets.length);
-        // console.log('sets[set + 1]', sets[set + 1]);
-
         const nextSet = sets.length > set + 1 ? sets[set + 1] : null;
-
-        // console.log('nextSet', nextSet);
 
         if (nextSet !== null) {
           return {
@@ -193,7 +204,6 @@ export default class App extends React.Component<Props, State> {
             },
             weight: nextSet.weight.toString(),
             reps: nextSet.repetitionCount.toString(),
-            // timer: 0,
             start: new Date().getTime(),
             elapsed: 0,
           } as State;
@@ -206,6 +216,9 @@ export default class App extends React.Component<Props, State> {
         };
       },
       () => {
+        if (this.timer) {
+          clearInterval(this.timer);
+        }
         this.timer = setInterval(this.tick, 100);
       },
     );
@@ -220,11 +233,17 @@ export default class App extends React.Component<Props, State> {
         type={item.type}
         completed={item.completed}
       >
-        <Text>
-          {item.type === 'warmup' ? 'Warmup ' : ''}Set {item.id}
-        </Text>
-        <Text>{item.repetitionCount} Reps</Text>
-        <Text>{item.weight} kg</Text>
+        <ItemView>
+          <Text>
+            {item.type === 'warmup' ? 'Warmup ' : ''}Set {item.id}
+          </Text>
+        </ItemView>
+        <ItemView>
+          <Text>{item.repetitionCount} Reps</Text>
+        </ItemView>
+        <ItemView>
+          <Text>{item.weight} kg</Text>
+        </ItemView>
       </ListItem>
     );
   };
@@ -284,11 +303,7 @@ export default class App extends React.Component<Props, State> {
     const minutes = duration.minutes - elapsedMinutes;
     const seconds = duration.seconds - elapsedSeconds + elapsedMinutes * 60;
 
-    // const weight = currentSet ? currentSet.weight : 0;
-    // const reps = currentSet ? currentSet.repetitionCount : 0;
-
-    // console.log('duration', exercise.restTime.toString());
-
+    const allCompleted = exercise.sets.every(set => set.completed);
     return (
       <Container>
         <StatusBar backgroundColor="#7B1FA2" />
@@ -297,14 +312,17 @@ export default class App extends React.Component<Props, State> {
           style={{ height: 64, backgroundColor: '#9C27B0' }}
           titleColor="#fff"
         />
-        {elapsed !== null && (
-          <Text>
-            Time until next set: {minutes}:{seconds.toString().length === 2
-              ? ''
-              : '0'}
-            {seconds}
-          </Text>
-        )}
+        <ReminderView>
+          {elapsed !== null && (
+            <Text>
+              Time until next set: {minutes}:{seconds.toString().length === 2
+                ? ''
+                : '0'}
+              {seconds}
+            </Text>
+          )}
+          {elapsed === null && <Text>Time for your next set!</Text>}
+        </ReminderView>
         <SectionList
           sections={[exerciseToSection(exercise)]}
           renderSectionHeader={this.renderSectionHeader}
@@ -313,6 +331,15 @@ export default class App extends React.Component<Props, State> {
           // ItemSeparatorComponent={() => <Separator color="#b4b4b4" />}
           // SectionSeparatorComponent={() => <Separator />}
         />
+        {allCompleted && (
+          <Button
+            title="Next"
+            onPress={() => {
+              this.setState({ exercise: exercise2 });
+            }}
+          />
+        )}
+
         <CompleteSetContainer>
           <TextInputLabel>Weight</TextInputLabel>
           <StyledTextInput
