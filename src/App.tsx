@@ -14,11 +14,12 @@ import {
   TextInput,
   ToolbarAndroid,
 } from 'react-native';
-import * as dateFns from 'date-fns';
+import { StackNavigator } from 'react-navigation';
 import styled, { css } from 'styled-components/native';
 import { Duration } from 'luxon';
 import { Partial, Workout, WorkoutSet, WorkoutSetType, Exercise } from 'types';
 import dummyData, { exercise2 } from './dummyData';
+import WorkoutScreen from './screens/WorkoutScreen';
 
 type Props = {};
 
@@ -151,7 +152,18 @@ const ItemView = styled.View`
   justify-content: center;
   width: 100%;
 `;
-export default class App extends React.Component<Props, State> {
+class App extends React.Component<Props, State> {
+  static navigationOptions = {
+    title: 'Lifting App',
+    headerStyle: {
+      backgroundColor: '#9C27B0',
+    },
+    headerTintColor: '#fff',
+    headerTitleStyle: {
+      fontWeight: 'bold',
+    },
+  };
+
   state = initialState;
 
   componentWillUnmount() {
@@ -307,11 +319,11 @@ export default class App extends React.Component<Props, State> {
     return (
       <Container>
         <StatusBar backgroundColor="#7B1FA2" />
-        <ToolbarAndroid
+        {/* <ToolbarAndroid
           title="Lifting app"
           style={{ height: 64, backgroundColor: '#9C27B0' }}
           titleColor="#fff"
-        />
+        /> */}
         <ReminderView>
           {elapsed !== null && (
             <Text>
@@ -393,3 +405,28 @@ export default class App extends React.Component<Props, State> {
     );
   }
 }
+
+export default StackNavigator(
+  {
+    Home: {
+      screen: App,
+      navigationOptions: {},
+    },
+    Workout: {
+      screen: WorkoutScreen,
+    },
+  },
+  {
+    initialRouteName: 'Home',
+    // containerOptions: {
+
+    // },
+    // contentOptions: {
+    //   activeTintColor: '#e91e63',
+    // },
+
+    // navigationOptions: {
+    //   headerTintColor: '#9C27B0',
+    // },
+  },
+);

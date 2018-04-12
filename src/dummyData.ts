@@ -4,7 +4,7 @@ import { WorkoutSetType, Exercise } from './types';
 const exercise: Exercise = {
   name: 'Back squat',
   id: '0',
-  restTime: Duration.fromMillis(300000),
+  restTime: Duration.fromMillis(60000),
   musclesWorked: ['legs'],
   sets: [
     {
